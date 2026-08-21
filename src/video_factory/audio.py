@@ -2,8 +2,9 @@
 
 from pathlib import Path
 
-from .models import AudioConfig, AudioTrack
-from .paths import resolve_audio_file_path
+from .models import AudioConfig, AudioTrack, Scene
+from .paths import resolve_audio_file_path, resolve_project_path
+from .timeline import build_timeline
 
 
 def default_gain(track: AudioTrack, config: AudioConfig) -> float:
@@ -17,13 +18,32 @@ def default_gain(track: AudioTrack, config: AudioConfig) -> float:
 
 
 def audio_graph(
-    tracks: list[AudioTrack], config: AudioConfig, project_dir: Path, total: float
+    tracks: list[AudioTrack],
+    config: AudioConfig,
+    project_dir: Path,
+    total: float,
+    scenes: list[Scene] | None = None,
 ) -> tuple[list[str], str]:
     """Return extra FFmpeg inputs and a filter_complex producing [mixed]."""
     inputs: list[str] = []
     chains: list[str] = []
     labels: list[str] = []
     input_index = 1  # input 0 is the composed silent video
+    for scene, item in zip(scenes or [], build_timeline(scenes or []), strict=True):
+        if not scene.source_audio:
+            continue
+        path = resolve_project_path(project_dir, scene.file, expected_root="input/video")
+        inputs.extend(["-i", str(path)])
+        delay = round(item.start * 1000)
+        label = f"scene_a{input_index}"
+        chains.append(
+            f"[{input_index}:a]atrim=start={scene.start}:duration={scene.duration},"
+            "asetpts=PTS-STARTPTS,"
+            f"aformat=sample_fmts=fltp:sample_rates={config.sample_rate}:channel_layouts=stereo,"
+            f"adelay={delay}|{delay}[{label}]"
+        )
+        labels.append(f"[{label}]")
+        input_index += 1
     for index, track in enumerate(tracks):
         duration = track.duration
         if track.type == "file":

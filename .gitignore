@@ -1,7 +1,9 @@
 .venv/
+*.egg-info/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest_tmp/
 .ruff_cache/
 .coverage
 htmlcov/
@@ -20,4 +22,3 @@ projects/*/output/*
 *.wav
 *.mp3
 *.flac
-

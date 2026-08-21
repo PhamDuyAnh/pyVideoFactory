@@ -71,7 +71,15 @@ def probe_media(path: Path, timeout: int = 30) -> MediaInfo:
         ffprobe, "-v", "error", "-show_format", "-show_streams", "-of", "json", str(path)
     ]
     try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            check=False,
+        )
     except (OSError, subprocess.TimeoutExpired) as error:
         raise ProbeError(f"Khong probe duoc {path}: {error}") from error
     if result.returncode:
@@ -80,4 +88,3 @@ def probe_media(path: Path, timeout: int = 30) -> MediaInfo:
         return parse_probe_json(json.loads(result.stdout))
     except (ValueError, TypeError, KeyError) as error:
         raise ProbeError(f"Du lieu ffprobe khong hop le cho {path}: {error}") from error
-
