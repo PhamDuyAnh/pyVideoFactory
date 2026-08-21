@@ -1,0 +1,50 @@
+# XV2DA Video Factory schema V1. Tat ca duong dan tuong doi voi thu muc project.
+schema_version: 1
+project:
+  id: PROJECT_ID
+  title: "PROJECT_TITLE"
+  description: "Mo ta ngan ve video."
+video:
+  width: 1080
+  height: 1920
+  fps: 24
+  background_color: "#000000"
+  video_codec: libx264
+  pixel_format: yuv420p
+  crf: 19
+  preset: medium
+  scale_mode: cover
+audio:
+  sample_rate: 48000
+  channels: 2
+  target_lufs: -14.0
+  true_peak_db: -1.5
+  default_voice_gain_db: 0.0
+  default_effect_gain_db: -12.0
+  default_ambience_gain_db: -24.0
+style:
+  font_file: null
+  font_name: "Arial"
+  font_size: 66
+  primary_color: "#FFFFFF"
+  outline_color: "#000000"
+  outline_width: 4
+  shadow: 1
+  alignment: bottom_center
+  margin_left: 80
+  margin_right: 80
+  margin_bottom: 250
+scenes:
+  - id: scene_01
+    file: input/video/scene_01.mp4
+    start: 0.0
+    duration: 3.0
+    source_audio: false
+    transition_after: {type: cut, duration: 0.0}
+captions: []
+audio_tracks: []
+outputs:
+  master: {file: output/final_short_1080p.mp4, width: 1080, height: 1920}
+  preview: {enabled: true, file: output/preview_720p.mp4, width: 405, height: 720, crf: 25}
+  report: {file: output/render_report.json}
+

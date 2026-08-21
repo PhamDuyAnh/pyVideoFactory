@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xv2da-video-factory"
+version = "1.0.0"
+description = "Cong cu dung video doc tu cac clip roi bang FFmpeg"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.6,<3", "PyYAML>=6,<7"]
+
+[project.scripts]
+video-factory = "video_factory.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
