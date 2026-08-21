@@ -6,10 +6,10 @@
 - **Sai font tiếng Việt:** dùng font hỗ trợ tiếng Việt, đặt trong `assets/fonts`, cấu hình `font_file`/`font_name` đúng.
 - **Clip thiếu audio:** bình thường khi `source_audio: false`; pipeline tạo audio thành phẩm từ tracks hoặc silence.
 - **Sai resolution/fps:** đây thường là cảnh báo; pipeline scale/crop và đổi fps. Chọn `contain` nếu không muốn crop.
+- **H.264 báo width/height không chia hết cho 2:** với `yuv420p`, đặt cả hai chiều master/preview thành số chẵn; mặc định preview là 540×960.
 - **Trim vượt duration:** giảm `start`/`duration` theo số liệu validate.
 - **Output đã tồn tại:** kiểm tra file cũ rồi thêm `--overwrite`; mặc định công cụ bảo vệ output.
 - **Path có khoảng trắng:** YAML vẫn dùng chuỗi bình thường; lệnh FFmpeg dùng argument list an toàn.
 - **Antivirus cảnh báo BAT:** đọc nội dung BAT; script chỉ tạo venv, pip install và gọi Python/FFmpeg, không tải binary.
 - **Render chậm:** dùng `preset: fast`/`veryfast` khi thử; `medium` cho bản cuối. File trung gian giúp xác định stage chậm.
 - **Render thất bại:** mở `output/render.log`, tìm stage cuối và command đầy đủ.
-

@@ -9,7 +9,7 @@ from pathlib import Path
 from .config import load_config
 from .exceptions import ConfigurationError, FFmpegMissingError, ProbeError
 from .models import ProjectConfig
-from .paths import resolve_project_path
+from .paths import resolve_audio_file_path, resolve_project_path, resolve_shared_asset_path
 from .probe import MediaInfo, probe_media, require_tools
 from .timeline import build_timeline, timeline_duration
 
@@ -48,6 +48,19 @@ def validate_project(project_dir: Path, *, check_tools: bool = True) -> Validati
         result.errors.extend(str(error).splitlines())
         return result
     result.config = config
+    if config.video.pixel_format == "yuv420p":
+        if config.video.width % 2:
+            result.errors.append("video.width: phai la so chan khi pixel_format la yuv420p")
+        if config.video.height % 2:
+            result.errors.append("video.height: phai la so chan khi pixel_format la yuv420p")
+        if config.outputs.preview.enabled and config.outputs.preview.width % 2:
+            result.errors.append(
+                "outputs.preview.width: phai la so chan khi pixel_format la yuv420p"
+            )
+        if config.outputs.preview.enabled and config.outputs.preview.height % 2:
+            result.errors.append(
+                "outputs.preview.height: phai la so chan khi pixel_format la yuv420p"
+            )
     try:
         timeline = build_timeline(config.scenes)
         result.duration = timeline_duration(config.scenes)
@@ -97,7 +110,7 @@ def validate_project(project_dir: Path, *, check_tools: bool = True) -> Validati
         if track.type != "file" or track.file is None:
             continue
         try:
-            path = resolve_project_path(project_dir, track.file, expected_root="input/audio")
+            path = resolve_audio_file_path(project_dir, track.file, track.role)
         except ConfigurationError as error:
             result.errors.append(f"audio_tracks[{index}].file: {error}")
             continue
@@ -129,7 +142,7 @@ def validate_project(project_dir: Path, *, check_tools: bool = True) -> Validati
 
     if config.style.font_file:
         try:
-            font = resolve_project_path(project_dir, config.style.font_file)
+            font = resolve_shared_asset_path(project_dir, config.style.font_file, "fonts")
             if not font.is_file():
                 result.warnings.append(
                     f"Khong tim thay font {font}; libass se dung fallback '{config.style.font_name}'"
@@ -137,4 +150,3 @@ def validate_project(project_dir: Path, *, check_tools: bool = True) -> Validati
         except ConfigurationError as error:
             result.errors.append(f"style.font_file: {error}")
     return result
-

@@ -13,7 +13,9 @@ setup_windows.bat
 render_video.bat projects\video_002
 ```
 
-Đặt clip trong `projects\video_002\input\video\`, audio trong `input\audio\`, rồi sửa các tên file/thời gian trong `project.yaml`. Master, preview, report và `render.log` nằm trong `output\`. File nguồn trong `input\` không bị sửa.
+Đặt clip trong `projects\video_002\input\video\`, audio trong `input\audio\`, rồi sửa các tên file/thời gian trong `project.yaml`. Master 1080×1920, preview mặc định 540×960, report và `render.log` nằm trong `output\`. File nguồn trong `input\` không bị sửa.
+
+Scene và voice luôn phải nằm trong `project/input`. Font dùng chung được đặt trong `assets/fonts`; effect/ambience dùng chung có thể đặt trong `assets/audio`. Mọi đường dẫn asset phải ở trong repository.
 
 Lệnh hữu ích:
 
@@ -32,4 +34,3 @@ Khi lỗi render, xem `projects\video_002\output\render.log`. Hướng dẫn chi
 .venv\Scripts\python.exe -m pytest
 .venv\Scripts\python.exe -m ruff check .
 ```
-
