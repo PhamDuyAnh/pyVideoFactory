@@ -6,7 +6,7 @@
 | `video` | Nguồn duy nhất cho kích thước master, fps, scale `cover`/`contain`, codec, CRF, preset |
 | `audio` | 48 kHz stereo, LUFS/true peak và gain mặc định theo role |
 | `style` | Font, cỡ/chất màu ASS, viền, vị trí và lề an toàn |
-| `scenes` | File, vùng trim và transition `cut`/`crossfade` |
+| `scenes` | File, vùng trim, audio nguồn và transition `cut`/`crossfade` |
 | `captions` | Text và thời gian trên timeline thành phẩm |
 | `audio_tracks` | File/tone/noise/ticks/silence, delay, fade, filter radio |
 | `outputs` | Đường dẫn master, preview 540×960 mặc định và JSON report |
@@ -19,6 +19,7 @@ scenes:
     file: input/video/scene_01.mp4
     start: 0.4
     duration: 3.0
+    source_audio: true
     transition_after: {type: crossfade, duration: 0.15}
 audio_tracks:
   - id: ptt
@@ -28,6 +29,11 @@ audio_tracks:
     duration: 0.08
     frequency_hz: 1000
 ```
+
+`source_audio` mặc định là `false`. Khi đặt `true`, pipeline đọc audio stream từ chính
+file video, trim cùng `start`/`duration`, delay tới vị trí scene trong timeline, rồi trộn
+với `audio_tracks` trước khi chạy loudnorm. Với crossfade, audio của hai scene có thể chồng
+lên nhau trong khoảng transition.
 
 Caption Shorts nên tối đa khoảng hai dòng. Giữ `margin_bottom` khoảng 200–300 px ở 1080×1920, lề trái/phải ít nhất 80 px để tránh nút giao diện. Ví dụ font dùng chung: `font_file: ../../assets/fonts/NotoSans-Bold.ttf`. Có thể dùng `null` để libass tìm font theo `font_name`.
 

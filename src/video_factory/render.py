@@ -60,14 +60,28 @@ def _compose_command(ffmpeg: str, config: ProjectConfig, scene_files: list[Path]
     if not has_crossfade:
         graph = "".join(f"[{i}:v]" for i in range(len(scene_files))) + f"concat=n={len(scene_files)}:v=1:a=0[v]"
     else:
-        chains: list[str] = []
-        current = "[0:v]"
+        # xfade requires matching, stable time bases. MP4 inputs commonly use a
+        # track-specific time base; chaining those directly can make FFmpeg drop
+        # every frame after the first scene (observed with FFmpeg 9).
+        chains = [
+            f"[{index}:v]settb=AVTB,setpts=PTS-STARTPTS[s{index}]"
+            for index in range(len(scene_files))
+        ]
+        current = "[s0]"
         elapsed = config.scenes[0].duration
         for index, previous in enumerate(config.scenes[:-1], start=1):
             label = "v" if index == len(scene_files) - 1 else f"x{index}"
-            overlap = previous.transition_after.duration if previous.transition_after.type == "crossfade" else 0.001
-            offset = max(0, elapsed - overlap)
-            chains.append(f"{current}[{index}:v]xfade=transition=fade:duration={overlap}:offset={offset}[{label}]")
+            is_crossfade = previous.transition_after.type == "crossfade"
+            if is_crossfade:
+                overlap = previous.transition_after.duration
+                offset = max(0, elapsed - overlap)
+                chains.append(
+                    f"{current}[s{index}]xfade=transition=fade:duration={overlap}:"
+                    f"offset={offset}[{label}]"
+                )
+            else:
+                overlap = 0
+                chains.append(f"{current}[s{index}]concat=n=2:v=1:a=0[{label}]")
             current = f"[{label}]"
             elapsed += config.scenes[index].duration - overlap
         graph = ";".join(chains)
@@ -168,7 +182,13 @@ def render_project(project: Path, validation: ValidationResult, *, overwrite: bo
 
             point = time.perf_counter()
             stage("4/6 Tron audio va loudnorm luot 1")
-            extra_inputs, graph = audio_graph(config.audio_tracks, config.audio, project, validation.duration)
+            extra_inputs, graph = audio_graph(
+                config.audio_tracks,
+                config.audio,
+                project,
+                validation.duration,
+                config.scenes,
+            )
             pass1 = [ffmpeg, "-hide_banner", "-i", str(captioned), *extra_inputs, "-filter_complex", graph + f";[mixed]{_loudnorm_filter(config)}[norm]", "-map", "[norm]", "-f", "null", "-"]
             log.write("\n[loudnorm_pass1]\n$ " + quote_command(pass1) + "\n")
             result = subprocess.run(pass1, capture_output=True, text=True, check=False)
