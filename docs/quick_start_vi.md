@@ -7,5 +7,4 @@
 5. Chạy `validate projects\video_002`. Sửa toàn bộ dòng `LOI`; dòng `CANH BAO` về fps/resolution thường được pipeline tự chuẩn hóa.
 6. Xem kế hoạch không tạo video bằng `python -m video_factory render projects\video_002 --dry-run` (dùng Python trong `.venv`).
 7. Render bằng `render_video.bat projects\video_002`.
-8. Xem master, preview và report trong `projects\video_002\output\`. Nếu thất bại, mở `render.log`.
-
+8. Xem master, preview 540×960 và report trong `projects\video_002\output\`. Nếu thất bại, mở `render.log`.

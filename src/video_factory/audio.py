@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from .models import AudioConfig, AudioTrack
-from .paths import resolve_project_path
+from .paths import resolve_audio_file_path
 
 
 def default_gain(track: AudioTrack, config: AudioConfig) -> float:
@@ -27,7 +27,7 @@ def audio_graph(
     for index, track in enumerate(tracks):
         duration = track.duration
         if track.type == "file":
-            path = resolve_project_path(project_dir, track.file or Path(), expected_root="input/audio")
+            path = resolve_audio_file_path(project_dir, track.file or Path(), track.role)
             inputs.extend(["-i", str(path)])
             source = f"[{input_index}:a]"
             input_index += 1

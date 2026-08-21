@@ -18,7 +18,12 @@ from .exceptions import RenderError
 from .ffmpeg import filter_path, quote_command, run_ffmpeg
 from .logging_utils import stage
 from .models import ProjectConfig, Scene
-from .paths import ensure_project_layout, resolve_project_path
+from .paths import (
+    ensure_project_layout,
+    resolve_audio_file_path,
+    resolve_project_path,
+    resolve_shared_asset_path,
+)
 from .probe import probe_media, require_tools
 from .subtitles import write_ass
 from .timeline import timeline_as_dicts, timeline_duration
@@ -155,7 +160,7 @@ def render_project(project: Path, validation: ValidationResult, *, overwrite: bo
             captioned = work / "captioned.mp4"
             subtitle_filter = f"subtitles='{filter_path(ass_path)}'"
             if config.style.font_file:
-                font = resolve_project_path(project, config.style.font_file)
+                font = resolve_shared_asset_path(project, config.style.font_file, "fonts")
                 if font.exists():
                     subtitle_filter += f":fontsdir='{filter_path(font.parent)}'"
             run_ffmpeg([ffmpeg, "-hide_banner", "-y", "-i", str(timeline_video), "-vf", subtitle_filter, "-an", "-c:v", "libx264", "-crf", "18", "-preset", config.video.preset, str(captioned)], log, "burn_subtitles")
@@ -180,7 +185,11 @@ def render_project(project: Path, validation: ValidationResult, *, overwrite: bo
             point = time.perf_counter()
             if config.outputs.preview.enabled:
                 stage("6/6 Tao preview")
-                run_ffmpeg([ffmpeg, "-hide_banner", "-y", "-i", str(master), "-vf", f"scale={config.outputs.preview.width}:{config.outputs.preview.height}", "-c:v", "libx264", "-crf", str(config.outputs.preview.crf), "-preset", "veryfast", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(preview)], log, "preview")
+                preview_filter = (
+                    f"scale={config.outputs.preview.width}:{config.outputs.preview.height},"
+                    "setsar=1,format=yuv420p"
+                )
+                run_ffmpeg([ffmpeg, "-hide_banner", "-y", "-i", str(master), "-vf", preview_filter, "-c:v", "libx264", "-crf", str(config.outputs.preview.crf), "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(preview)], log, "preview")
             timings["preview"] = time.perf_counter() - point
         except RenderError as error:
             log.write(f"\nFAILED: {error}\n")
@@ -188,13 +197,17 @@ def render_project(project: Path, validation: ValidationResult, *, overwrite: bo
 
     actual = probe_media(master).duration
     inputs = [resolve_project_path(project, scene.file) for scene in config.scenes]
-    inputs.extend(resolve_project_path(project, track.file) for track in config.audio_tracks if track.file)
+    inputs.extend(
+        resolve_audio_file_path(project, track.file, track.role)
+        for track in config.audio_tracks
+        if track.file
+    )
     report = {
         "application_version": __version__, "rendered_at": datetime.now(UTC).isoformat(),
         "python_version": platform.python_version(), "ffmpeg_version": subprocess.run([ffmpeg, "-version"], capture_output=True, text=True, check=False).stdout.splitlines()[0],
         "inputs": [_file_fingerprint(path) for path in inputs], "timeline": timeline_as_dicts(config.scenes),
         "expected_duration": timeline_duration(config.scenes), "actual_duration": actual,
-        "master": {"file": str(master), "width": config.outputs.master.width, "height": config.outputs.master.height},
+        "master": {"file": str(master), "width": config.video.width, "height": config.video.height},
         "preview": {"enabled": config.outputs.preview.enabled, "file": str(preview) if config.outputs.preview.enabled else None},
         "warnings": validation.warnings, "stage_seconds": timings, "total_seconds": time.perf_counter() - started, "success": True,
     }

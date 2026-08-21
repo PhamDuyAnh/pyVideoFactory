@@ -128,15 +128,13 @@ class AudioTrack(StrictModel):
 
 class MasterOutput(StrictModel):
     file: Path = Path("output/final_short_1080p.mp4")
-    width: int = Field(default=1080, gt=0)
-    height: int = Field(default=1920, gt=0)
 
 
 class PreviewOutput(StrictModel):
     enabled: bool = True
     file: Path = Path("output/preview_720p.mp4")
-    width: int = Field(default=405, gt=0)
-    height: int = Field(default=720, gt=0)
+    width: int = Field(default=540, gt=0)
+    height: int = Field(default=960, gt=0)
     crf: int = Field(default=25, ge=0, le=51)
 
 

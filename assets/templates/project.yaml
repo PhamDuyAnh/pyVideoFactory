@@ -23,8 +23,8 @@ audio:
   default_effect_gain_db: -12.0
   default_ambience_gain_db: -24.0
 style:
-  font_file: null
-  font_name: "Arial"
+  font_file: ../../assets/fonts/NotoSans-Bold.ttf
+  font_name: "Noto Sans"
   font_size: 66
   primary_color: "#FFFFFF"
   outline_color: "#000000"
@@ -44,7 +44,6 @@ scenes:
 captions: []
 audio_tracks: []
 outputs:
-  master: {file: output/final_short_1080p.mp4, width: 1080, height: 1920}
-  preview: {enabled: true, file: output/preview_720p.mp4, width: 405, height: 720, crf: 25}
+  master: {file: output/final_short_1080p.mp4}
+  preview: {enabled: true, file: output/preview_960p.mp4, width: 540, height: 960, crf: 25}
   report: {file: output/render_report.json}
-
