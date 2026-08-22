@@ -19,7 +19,7 @@ lên mạng xã hội.
 Chạy một lần từ Command Prompt hoặc PowerShell tại thư mục repository:
 
 ```bat
-setup_windows.bat
+.\setup_windows.bat
 ```
 
 Script tạo `.venv`, cài dependencies từ `requirements.txt`, cài package ở editable mode,
@@ -39,10 +39,10 @@ python -m venv .venv
 ## Bắt đầu nhanh
 
 ```bat
-setup_windows.bat
+.\setup_windows.bat
 .venv\Scripts\python.exe -m video_factory new-project video_002
 .venv\Scripts\python.exe -m video_factory validate projects\video_002
-render_video.bat projects\video_002 --overwrite
+.\render_video.bat projects\video_002 --overwrite
 ```
 
 Đặt clip trong `projects\video_002\input\video\`, audio trong `input\audio\`, rồi sửa các tên file/thời gian trong `project.yaml`. Master 1080×1920, preview mặc định 540×960, report và `render.log` nằm trong `output\`. File nguồn trong `input\` không bị sửa.
